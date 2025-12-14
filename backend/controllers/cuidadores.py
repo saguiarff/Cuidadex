@@ -4,22 +4,41 @@ from utils.responses import success, error
 
 bp = Blueprint("cuidadores", __name__, url_prefix="/api/cuidadores")
 
+
 @bp.get("/")
 def listar():
-    verificado = request.args.get("verificado")
-    sql = """
-        SELECT usuario_id, valor_hora, raio_atendimento_km, verificado,
-               nota_media, total_avaliacoes, disponivel
-        FROM cuidadores
-    """
-    params = []
+    try:
+        verificado = request.args.get("verificado")
 
-    if verificado is not None:
-        sql += " WHERE verificado = %s"
-        params.append(verificado.lower() in ("true", "1", "t"))
+        sql = """
+            SELECT
+                u.id,
+                u.nome,
+                u.avatar_url,
+                c.bio,
+                c.valor_hora,
+                c.raio_atendimento_km,
+                c.verificado,
+                c.nota_media,
+                c.total_avaliacoes,
+                c.disponivel
+            FROM cuidadores c
+            JOIN usuarios u ON u.id = c.usuario_id
+        """
 
-    with get_conn() as conn, conn.cursor() as cur:
-        cur.execute(sql, tuple(params))
-        rows = cur.fetchall()
+        params = []
 
-    return success(rows)
+        if verificado is not None:
+            sql += " WHERE c.verificado = %s"
+            params.append(verificado.lower() in ("true", "1", "t"))
+
+        sql += " ORDER BY c.nota_media DESC"
+
+        with get_conn() as conn, conn.cursor() as cur:
+            cur.execute(sql, tuple(params))
+            rows = cur.fetchall()
+
+        return success(rows)
+
+    except Exception as e:
+        return error(str(e))
