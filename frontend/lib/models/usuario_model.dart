@@ -1,7 +1,7 @@
 class UsuarioModel {
   final int id;
   final String nome;
-  final String tipoUsuario; // "C" para cliente/contratante ou "G" para cuidador
+  final String tipoUsuario; // "C" ou "G"
   final String token;
 
   UsuarioModel({
@@ -10,6 +10,9 @@ class UsuarioModel {
     required this.tipoUsuario,
     required this.token,
   });
+
+  bool get isContratante => tipoUsuario == "C";
+  bool get isCuidador => tipoUsuario == "G";
 
   factory UsuarioModel.fromJson(Map<String, dynamic> json) {
     return UsuarioModel(
