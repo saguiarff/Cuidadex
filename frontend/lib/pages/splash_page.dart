@@ -14,7 +14,7 @@ class _SplashCuidadexState extends State<SplashCuidadex> {
   void initState() {
     super.initState();
 
-    Future.delayed(const Duration(seconds: 3), () {
+    Future.delayed(const Duration(seconds: 2), () {
       if (!mounted) return;
 
       Navigator.pushReplacement(

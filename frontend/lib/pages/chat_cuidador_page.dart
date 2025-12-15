@@ -1,8 +1,14 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import '../models/cuidador_model.dart';
 
 class ChatCuidadorPage extends StatefulWidget {
-  const ChatCuidadorPage({super.key});
+  final CuidadorModel cuidador;
+
+  const ChatCuidadorPage({
+    super.key,
+    required this.cuidador,
+  });
 
   @override
   State<ChatCuidadorPage> createState() => _ChatCuidadorPageState();
@@ -10,21 +16,29 @@ class ChatCuidadorPage extends StatefulWidget {
 
 class _ChatCuidadorPageState extends State<ChatCuidadorPage> {
   final TextEditingController _controller = TextEditingController();
+  final ScrollController _scrollController = ScrollController();
+
   final List<_Mensagem> _mensagens = [];
 
   @override
   void initState() {
     super.initState();
 
-    // Mensagem inicial mockada
     _mensagens.add(
       _Mensagem(
         texto:
-            "Olá! Claro. Estou disponível para conversar. O que gostaria de saber?",
+            "Olá! Estou disponível para conversar. O que gostaria de saber?",
         enviadaPeloUsuario: false,
-        hora: "10:01",
+        hora: _horaAtual(),
       ),
     );
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    _scrollController.dispose();
+    super.dispose();
   }
 
   void _enviarMensagem() {
@@ -42,9 +56,12 @@ class _ChatCuidadorPageState extends State<ChatCuidadorPage> {
     });
 
     _controller.clear();
+    _rolarParaBaixo();
 
-    // Resposta automática mockada
+    // resposta mockada (por enquanto)
     Timer(const Duration(seconds: 1), () {
+      if (!mounted) return;
+
       setState(() {
         _mensagens.add(
           _Mensagem(
@@ -55,6 +72,20 @@ class _ChatCuidadorPageState extends State<ChatCuidadorPage> {
           ),
         );
       });
+
+      _rolarParaBaixo();
+    });
+  }
+
+  void _rolarParaBaixo() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (_scrollController.hasClients) {
+        _scrollController.animateTo(
+          _scrollController.position.maxScrollExtent,
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeOut,
+        );
+      }
     });
   }
 
@@ -69,8 +100,8 @@ class _ChatCuidadorPageState extends State<ChatCuidadorPage> {
 
     return Scaffold(
       backgroundColor: const Color(0xFFF6F5F9),
+      resizeToAvoidBottomInset: true,
 
-      // ================= APP BAR =================
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 1,
@@ -81,28 +112,33 @@ class _ChatCuidadorPageState extends State<ChatCuidadorPage> {
         titleSpacing: 0,
         title: Row(
           children: [
-            const CircleAvatar(
+            CircleAvatar(
               radius: 18,
-              backgroundImage:
-                  NetworkImage("https://i.imgur.com/gJ1pT9z.png"),
+              backgroundImage: NetworkImage(
+                widget.cuidador.avatarUrl ??
+                    "https://via.placeholder.com/100",
+              ),
             ),
             const SizedBox(width: 10),
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
-              children: const [
+              children: [
                 Text(
-                  "Jeniffer Tanaka",
-                  style: TextStyle(
+                  widget.cuidador.nome,
+                  style: const TextStyle(
                     fontSize: 15,
                     fontWeight: FontWeight.bold,
-                    color: Colors.black87,
                   ),
                 ),
                 Text(
-                  "Disponível",
+                  widget.cuidador.disponivel
+                      ? "Disponível"
+                      : "Indisponível",
                   style: TextStyle(
                     fontSize: 12,
-                    color: Colors.green,
+                    color: widget.cuidador.disponivel
+                        ? Colors.green
+                        : Colors.red,
                   ),
                 ),
               ],
@@ -111,72 +147,74 @@ class _ChatCuidadorPageState extends State<ChatCuidadorPage> {
         ),
       ),
 
-      // ================= CORPO =================
       body: Column(
         children: [
-          // LISTA DE MENSAGENS
           Expanded(
             child: ListView.builder(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              controller: _scrollController,
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               itemCount: _mensagens.length,
               itemBuilder: (context, index) {
-                final msg = _mensagens[index];
-                return _BalaoMensagem(mensagem: msg);
+                return _BalaoMensagem(mensagem: _mensagens[index]);
               },
             ),
           ),
 
-          // CAMPO DE TEXTO
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-            decoration: const BoxDecoration(
-              color: Colors.white,
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black12,
-                  blurRadius: 6,
-                  offset: Offset(0, -2),
-                ),
-              ],
-            ),
-            child: Row(
-              children: [
-                IconButton(
-                  icon: const Icon(Icons.camera_alt_outlined),
-                  color: primaryColor,
-                  onPressed: () {},
-                ),
-                Expanded(
-                  child: TextField(
-                    controller: _controller,
-                    decoration: InputDecoration(
-                      hintText: "Digite aqui...",
-                      filled: true,
-                      fillColor: const Color(0xFFF1F0F5),
-                      contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 12,
+        
+          SafeArea(
+            child: Container(
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+              decoration: const BoxDecoration(
+                color: Colors.white,
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black12,
+                    blurRadius: 6,
+                    offset: Offset(0, -2),
+                  ),
+                ],
+              ),
+              child: Row(
+                children: [
+                  IconButton(
+                    icon: const Icon(Icons.camera_alt_outlined),
+                    color: primaryColor,
+                    onPressed: () {},
+                  ),
+                  Expanded(
+                    child: TextField(
+                      controller: _controller,
+                      decoration: InputDecoration(
+                        hintText: "Digite sua mensagem...",
+                        filled: true,
+                        fillColor: const Color(0xFFF1F0F5),
+                        contentPadding:
+                            const EdgeInsets.symmetric(horizontal: 16),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(30),
+                          borderSide: BorderSide.none,
+                        ),
                       ),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(30),
-                        borderSide: BorderSide.none,
-                      ),
+                      onSubmitted: (_) => _enviarMensagem(),
                     ),
                   ),
-                ),
-                const SizedBox(width: 8),
-                GestureDetector(
-                  onTap: _enviarMensagem,
-                  child: Container(
-                    padding: const EdgeInsets.all(12),
-                    decoration: const BoxDecoration(
-                      color: primaryColor,
-                      shape: BoxShape.circle,
+                  const SizedBox(width: 8),
+                  GestureDetector(
+                    onTap: _enviarMensagem,
+                    child: Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: const BoxDecoration(
+                        color: primaryColor,
+                        shape: BoxShape.circle,
+                      ),
+                      child:
+                          const Icon(Icons.send, color: Colors.white),
                     ),
-                    child: const Icon(Icons.send, color: Colors.white),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ],
@@ -185,9 +223,6 @@ class _ChatCuidadorPageState extends State<ChatCuidadorPage> {
   }
 }
 
-// ===================================================================
-//                         MODELO DE MENSAGEM
-// ===================================================================
 
 class _Mensagem {
   final String texto;
@@ -201,9 +236,6 @@ class _Mensagem {
   });
 }
 
-// ===================================================================
-//                       BALÃO DE MENSAGEM
-// ===================================================================
 
 class _BalaoMensagem extends StatelessWidget {
   final _Mensagem mensagem;
@@ -219,7 +251,8 @@ class _BalaoMensagem extends StatelessWidget {
       alignment: isUser ? Alignment.centerRight : Alignment.centerLeft,
       child: Container(
         margin: const EdgeInsets.only(bottom: 10),
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+        padding:
+            const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
         constraints: BoxConstraints(
           maxWidth: MediaQuery.of(context).size.width * 0.75,
         ),
@@ -240,19 +273,12 @@ class _BalaoMensagem extends StatelessWidget {
           children: [
             Text(
               mensagem.texto,
-              style: const TextStyle(
-                fontSize: 14,
-                color: Colors.black87,
-                height: 1.4,
-              ),
+              style: const TextStyle(fontSize: 14, height: 1.4),
             ),
             const SizedBox(height: 4),
             Text(
               mensagem.hora,
-              style: const TextStyle(
-                fontSize: 11,
-                color: Colors.grey,
-              ),
+              style: const TextStyle(fontSize: 11, color: Colors.grey),
             ),
           ],
         ),

@@ -4,19 +4,33 @@ import '../core/api_config.dart';
 import '../models/cuidador_model.dart';
 
 class CuidadoresService {
-  static Future<List<CuidadorModel>> listar() async {
-    final response = await http.get(
-      Uri.parse("${ApiConfig.baseUrl}/cuidadores"),
+  static Future<List<CuidadorModel>> listar({bool? verificado}) async {
+    final uri = Uri.parse(
+      "${ApiConfig.baseUrl}/api/cuidadores"
+      "${verificado != null ? '?verificado=$verificado' : ''}",
     );
+
+    final response = await http.get(
+      uri,
+      headers: {
+        "Content-Type": "application/json",
+      },
+    );
+
+    if (response.statusCode != 200) {
+      throw Exception("Erro ao buscar cuidadores (${response.statusCode})");
+    }
 
     final body = jsonDecode(response.body);
 
-    if (!body["success"]) {
-      throw Exception(body["error"]);
+    if (body["success"] != true) {
+      throw Exception(body["error"] ?? "Erro desconhecido");
     }
 
-    return (body["data"] as List)
-        .map((c) => CuidadorModel.fromJson(c))
+    final List lista = body["data"];
+
+    return lista
+        .map((json) => CuidadorModel.fromJson(json))
         .toList();
   }
 }
