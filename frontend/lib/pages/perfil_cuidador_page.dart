@@ -1,8 +1,11 @@
-import 'package:cuidadex_frontend/pages/chat_cuidador_page.dart';
+import 'package:cuidadex_frontend/models/cuidador_model.dart';
 import 'package:flutter/material.dart';
+import 'chat_cuidador_page.dart';
 
 class PerfilCuidadorPage extends StatelessWidget {
-  const PerfilCuidadorPage({super.key});
+  final CuidadorModel cuidador;
+
+  const PerfilCuidadorPage({super.key, required this.cuidador});
 
   @override
   Widget build(BuildContext context) {
@@ -19,7 +22,6 @@ class PerfilCuidadorPage extends StatelessWidget {
         ),
       ),
 
-      // ===================== BODY RESPONSIVO =====================
       body: LayoutBuilder(
         builder: (context, constraints) {
           final bool telaLarga = constraints.maxWidth > 800;
@@ -38,22 +40,23 @@ class PerfilCuidadorPage extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
-                      // ================= FOTO =================
                       const SizedBox(height: 12),
-                      const CircleAvatar(
+
+                      // FOTO
+                      CircleAvatar(
                         radius: 52,
                         backgroundImage: NetworkImage(
-                          "https://i.imgur.com/gJ1pT9z.png",
+                          cuidador.avatarUrl ??
+                              "https://via.placeholder.com/100",
                         ),
                       ),
 
                       const SizedBox(height: 14),
 
-                      // ================= NOME =================
-                      const Text(
-                        "Jeniffer Tanaka",
+                      Text(
+                        cuidador.nome,
                         textAlign: TextAlign.center,
-                        style: TextStyle(
+                        style: const TextStyle(
                           fontSize: 22,
                           fontWeight: FontWeight.bold,
                         ),
@@ -61,11 +64,10 @@ class PerfilCuidadorPage extends StatelessWidget {
 
                       const SizedBox(height: 6),
 
-                      // ================= DESCRIÇÃO CURTA =================
-                      const Text(
-                        "Profissional experiente em cuidados com criança, idosos e pessoas com deficiência",
+                      Text(
+                        cuidador.bio ?? "Cuidador profissional",
                         textAlign: TextAlign.center,
-                        style: TextStyle(
+                        style: const TextStyle(
                           fontSize: 14,
                           color: Color(0xFF6A6A74),
                           height: 1.4,
@@ -74,15 +76,17 @@ class PerfilCuidadorPage extends StatelessWidget {
 
                       const SizedBox(height: 10),
 
-                      // ================= PERFIL VERIFICADO =================
                       Row(
                         mainAxisAlignment: MainAxisAlignment.center,
-                        children: const [
-                          Icon(Icons.star, color: Colors.amber, size: 18),
-                          SizedBox(width: 6),
+                        children: [
+                          const Icon(Icons.star,
+                              color: Colors.amber, size: 18),
+                          const SizedBox(width: 6),
                           Text(
-                            "Perfil verificado",
-                            style: TextStyle(
+                            cuidador.verificado
+                                ? "Perfil verificado"
+                                : "Perfil não verificado",
+                            style: const TextStyle(
                               fontWeight: FontWeight.w600,
                             ),
                           ),
@@ -91,13 +95,11 @@ class PerfilCuidadorPage extends StatelessWidget {
 
                       const SizedBox(height: 18),
 
-                      // ================= TEXTO LONGO =================
-                      const Text(
-                        "Com mais de 10 anos de experiência, sou uma cuidadora atenciosa "
-                        "e confiável. Possuo certificação e tenho antecedentes criminais limpos. "
-                        "Sou apaixonada por oferecer o melhor atendimento possível aos meus clientes.",
+                      Text(
+                        cuidador.bio ??
+                            "Descrição do cuidador não disponível.",
                         textAlign: TextAlign.center,
-                        style: TextStyle(
+                        style: const TextStyle(
                           fontSize: 14,
                           color: Color(0xFF3A3A3A),
                           height: 1.6,
@@ -106,7 +108,6 @@ class PerfilCuidadorPage extends StatelessWidget {
 
                       const SizedBox(height: 18),
 
-                      // ================= TAGS =================
                       Wrap(
                         alignment: WrapAlignment.center,
                         spacing: 10,
@@ -120,14 +121,14 @@ class PerfilCuidadorPage extends StatelessWidget {
 
                       const SizedBox(height: 24),
 
-                      // ================= BOTÃO CONTRATAR =================
                       SizedBox(
                         width: double.infinity,
                         child: ElevatedButton(
                           onPressed: () {},
                           style: ElevatedButton.styleFrom(
                             backgroundColor: primaryColor,
-                            padding: const EdgeInsets.symmetric(vertical: 16),
+                            padding:
+                                const EdgeInsets.symmetric(vertical: 16),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(14),
                             ),
@@ -145,7 +146,6 @@ class PerfilCuidadorPage extends StatelessWidget {
 
                       const SizedBox(height: 14),
 
-                      // ================= AÇÕES =================
                       Row(
                         children: [
                           Expanded(
@@ -155,7 +155,8 @@ class PerfilCuidadorPage extends StatelessWidget {
                               label: const Text("Favoritar"),
                               style: OutlinedButton.styleFrom(
                                 foregroundColor: primaryColor,
-                                side: const BorderSide(color: primaryColor),
+                                side:
+                                    const BorderSide(color: primaryColor),
                                 padding:
                                     const EdgeInsets.symmetric(vertical: 14),
                                 shape: RoundedRectangleBorder(
@@ -171,7 +172,9 @@ class PerfilCuidadorPage extends StatelessWidget {
                                 Navigator.push(
                                   context,
                                   MaterialPageRoute(
-                                    builder: (_) => const ChatCuidadorPage(),
+                                    builder: (_) => ChatCuidadorPage(
+                                      cuidador: cuidador,
+                                    ),
                                   ),
                                 );
                               },
@@ -179,7 +182,8 @@ class PerfilCuidadorPage extends StatelessWidget {
                               label: const Text("Iniciar Chat"),
                               style: OutlinedButton.styleFrom(
                                 foregroundColor: primaryColor,
-                                side: const BorderSide(color: primaryColor),
+                                side:
+                                    const BorderSide(color: primaryColor),
                                 padding:
                                     const EdgeInsets.symmetric(vertical: 14),
                                 shape: RoundedRectangleBorder(
@@ -193,7 +197,6 @@ class PerfilCuidadorPage extends StatelessWidget {
 
                       const SizedBox(height: 28),
 
-                      // ================= COMENTÁRIOS =================
                       const Align(
                         alignment: Alignment.centerLeft,
                         child: Text(
@@ -210,52 +213,12 @@ class PerfilCuidadorPage extends StatelessWidget {
                       const _Comentario(
                         nome: "João Carlos",
                         texto:
-                            "Jeniffer foi incrível com meu pai. Ela foi paciente, gentil e muito profissional.",
+                            "Cuidador muito atencioso e profissional.",
                       ),
                       const _Comentario(
                         nome: "Sarah Souza",
                         texto:
-                            "Meus filhos adoram a Jenni. Ela é muito criativa e sempre inventa atividades.",
-                      ),
-
-                      const SizedBox(height: 16),
-
-                      // ================= CAMPO COMENTÁRIO =================
-                      TextField(
-                        maxLines: 3,
-                        decoration: InputDecoration(
-                          hintText: "Escreva seu comentário...",
-                          filled: true,
-                          fillColor: Colors.white,
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(14),
-                            borderSide: BorderSide.none,
-                          ),
-                        ),
-                      ),
-
-                      const SizedBox(height: 12),
-
-                      SizedBox(
-                        width: double.infinity,
-                        child: ElevatedButton(
-                          onPressed: () {},
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: primaryColor,
-                            padding:
-                                const EdgeInsets.symmetric(vertical: 14),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(14),
-                            ),
-                          ),
-                          child: const Text(
-                            "Enviar comentário",
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white,
-                            ),
-                          ),
-                        ),
+                            "Excelente experiência, recomendo!",
                       ),
 
                       const SizedBox(height: 24),
@@ -271,9 +234,6 @@ class PerfilCuidadorPage extends StatelessWidget {
   }
 }
 
-// ===================================================================
-//                          WIDGETS AUXILIARES
-// ===================================================================
 
 class _Tag extends StatelessWidget {
   final String label;
@@ -313,21 +273,14 @@ class _Comentario extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          CircleAvatar(
-            radius: 18,
-            child: Text(nome[0]),
-          ),
+          CircleAvatar(radius: 18, child: Text(nome[0])),
           const SizedBox(width: 10),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  nome,
-                  style: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
+                Text(nome,
+                    style: const TextStyle(fontWeight: FontWeight.bold)),
                 const SizedBox(height: 4),
                 Text(
                   texto,

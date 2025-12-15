@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cuidadex_frontend/services/auth_service.dart';
-import 'package:cuidadex_frontend/models/user_model.dart';
+import 'package:cuidadex_frontend/models/usuario_model.dart';
 
 import 'home_contratante_page.dart';
 import 'home_cuidador_page.dart';
@@ -17,12 +17,59 @@ class _LoginPageState extends State<LoginPage> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   bool _obscurePassword = true;
+  bool _carregando = false;
 
   @override
   void dispose() {
     _emailController.dispose();
     _passwordController.dispose();
     super.dispose();
+  }
+
+  Future<void> _realizarLogin() async {
+    final email = _emailController.text.trim();
+    final senha = _passwordController.text.trim();
+
+    if (email.isEmpty || senha.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Informe e-mail e senha")),
+      );
+      return;
+    }
+
+    setState(() => _carregando = true);
+
+    try {
+      final UsuarioModel usuario =
+          await AuthService.login(email, senha);
+
+      if (!mounted) return;
+
+      // redirecionamento pelo tipo vindo do back
+      if (usuario.isContratante) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (_) => const HomeContratantePage(),
+          ),
+        );
+      } else {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (_) => const HomeCuidadorPage(),
+          ),
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(e.toString().replaceAll('Exception:', ''))),
+      );
+    } finally {
+      if (mounted) {
+        setState(() => _carregando = false);
+      }
+    }
   }
 
   @override
@@ -40,7 +87,6 @@ class _LoginPageState extends State<LoginPage> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  // ================= CARD =================
                   Container(
                     padding: const EdgeInsets.symmetric(
                       horizontal: 22,
@@ -60,7 +106,6 @@ class _LoginPageState extends State<LoginPage> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        // LOGO
                         Center(
                           child: SizedBox(
                             width: 95,
@@ -72,7 +117,7 @@ class _LoginPageState extends State<LoginPage> {
                           ),
                         ),
 
-                        const SizedBox(height: 18),
+                        const SizedBox(height: 24),
 
                         const Center(
                           child: Text(
@@ -100,7 +145,6 @@ class _LoginPageState extends State<LoginPage> {
 
                         const SizedBox(height: 28),
 
-                        // EMAIL
                         const Text(
                           'E-mail',
                           style: TextStyle(
@@ -120,10 +164,6 @@ class _LoginPageState extends State<LoginPage> {
                                 const Icon(Icons.mail_outline_rounded),
                             filled: true,
                             fillColor: const Color(0xFFF7F8FB),
-                            contentPadding: const EdgeInsets.symmetric(
-                              horizontal: 16,
-                              vertical: 16,
-                            ),
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(16),
                               borderSide: BorderSide.none,
@@ -133,7 +173,6 @@ class _LoginPageState extends State<LoginPage> {
 
                         const SizedBox(height: 18),
 
-                        // SENHA
                         const Text(
                           'Senha',
                           style: TextStyle(
@@ -165,10 +204,6 @@ class _LoginPageState extends State<LoginPage> {
                             ),
                             filled: true,
                             fillColor: const Color(0xFFF7F8FB),
-                            contentPadding: const EdgeInsets.symmetric(
-                              horizontal: 16,
-                              vertical: 16,
-                            ),
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(16),
                               borderSide: BorderSide.none,
@@ -176,138 +211,41 @@ class _LoginPageState extends State<LoginPage> {
                           ),
                         ),
 
-                        const SizedBox(height: 10),
+                        const SizedBox(height: 20),
 
-                        // ESQUECEU SENHA
-                        Align(
-                          alignment: Alignment.centerRight,
-                          child: TextButton(
-                            style: TextButton.styleFrom(
-                              foregroundColor: primaryColor,
-                              padding: EdgeInsets.zero,
-                            ),
-                            onPressed: () {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                  content: Text(
-                                      'Recuperação de senha em breve'),
-                                ),
-                              );
-                            },
-                            child: const Text(
-                              'Esqueceu a senha?',
-                              style: TextStyle(
-                                fontWeight: FontWeight.w700,
-                                fontSize: 13,
-                              ),
-                            ),
-                          ),
-                        ),
-
-                        const SizedBox(height: 6),
-
-                        // ================= BOTÃO LOGIN =================
                         SizedBox(
                           width: double.infinity,
-                          child: DecoratedBox(
-                            decoration: BoxDecoration(
-                              gradient: const LinearGradient(
-                                colors: [
-                                  Color(0xFF8A74F7),
-                                  Color(0xFF7159E8),
-                                ],
-                                begin: Alignment.topLeft,
-                                end: Alignment.bottomRight,
+                          child: ElevatedButton(
+                            onPressed: _carregando ? null : _realizarLogin,
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: primaryColor,
+                              padding:
+                                  const EdgeInsets.symmetric(vertical: 16),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(18),
                               ),
-                              borderRadius: BorderRadius.circular(18),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: primaryColor.withOpacity(0.3),
-                                  blurRadius: 10,
-                                  offset: const Offset(0, 6),
-                                ),
-                              ],
                             ),
-                            child: ElevatedButton(
-                              onPressed: () {
-                                final email =
-                                    _emailController.text.trim();
-                                final senha =
-                                    _passwordController.text.trim();
-
-                                UserModel? usuarioEncontrado;
-
-                                for (var user in MockUsers.all) {
-                                  if (user.email == email &&
-                                      user.senha == senha) {
-                                    usuarioEncontrado = user;
-                                    break;
-                                  }
-                                }
-
-                                if (usuarioEncontrado == null) {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(
-                                      content:
-                                          Text("Credenciais inválidas"),
+                            child: _carregando
+                                ? const SizedBox(
+                                    width: 22,
+                                    height: 22,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                      color: Colors.white,
                                     ),
-                                  );
-                                  return;
-                                }
-
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                    content: Text(
-                                      "Bem-vindo, ${usuarioEncontrado.nome}!",
+                                  )
+                                : const Text(
+                                    'Login',
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.w800,
+                                      fontSize: 15,
                                     ),
                                   ),
-                                );
-
-                                // 🔥 REDIRECIONAMENTO PELO TIPO
-                                if (usuarioEncontrado.tipo ==
-                                    "contratante") {
-                                  Navigator.pushReplacement(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (_) =>
-                                          const HomeContratantePage(),
-                                    ),
-                                  );
-                                } else if (usuarioEncontrado.tipo ==
-                                    "cuidador") {
-                                  Navigator.pushReplacement(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (_) =>
-                                          const HomeCuidadorPage(),
-                                    ),
-                                  );
-                                }
-                              },
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.transparent,
-                                shadowColor: Colors.transparent,
-                                padding: const EdgeInsets.symmetric(
-                                    vertical: 16),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius:
-                                      BorderRadius.circular(18),
-                                ),
-                              ),
-                              child: const Text(
-                                'Login',
-                                style: TextStyle(
-                                  fontWeight: FontWeight.w800,
-                                  fontSize: 15,
-                                ),
-                              ),
-                            ),
                           ),
                         ),
 
                         const SizedBox(height: 18),
 
-                        // CADASTRO
                         Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
@@ -319,10 +257,6 @@ class _LoginPageState extends State<LoginPage> {
                               ),
                             ),
                             TextButton(
-                              style: TextButton.styleFrom(
-                                padding: EdgeInsets.zero,
-                                foregroundColor: primaryColor,
-                              ),
                               onPressed: () {
                                 Navigator.push(
                                   context,
@@ -353,7 +287,6 @@ class _LoginPageState extends State<LoginPage> {
                     style: TextStyle(
                       color: Color(0xFF5E5E6A),
                       fontSize: 11,
-                      letterSpacing: 0.2,
                     ),
                   ),
                 ],
