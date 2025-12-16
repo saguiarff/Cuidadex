@@ -116,7 +116,7 @@ class _ChatCuidadorPageState extends State<ChatCuidadorPage> {
               radius: 18,
               backgroundImage: NetworkImage(
                 widget.cuidador.avatarUrl ??
-                    "https://via.placeholder.com/100",
+                    "assets/images/avatar_padrao.jpg",
               ),
             ),
             const SizedBox(width: 10),

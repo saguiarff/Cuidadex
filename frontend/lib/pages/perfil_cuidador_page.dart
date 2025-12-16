@@ -47,7 +47,7 @@ class PerfilCuidadorPage extends StatelessWidget {
                         radius: 52,
                         backgroundImage: NetworkImage(
                           cuidador.avatarUrl ??
-                              "https://via.placeholder.com/100",
+                              "assets/images/avatar_padrao.jpg",
                         ),
                       ),
 

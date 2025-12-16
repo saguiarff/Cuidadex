@@ -21,6 +21,7 @@ class _CadastroCuidadorPageState extends State<CadastroCuidadorPage> {
   final _enderecoCtrl = TextEditingController();
   final _bioCtrl = TextEditingController();
 
+  // tipos (apenas visual por enquanto
   bool cuidadoCriancas = false;
   bool cuidadoIdosos = false;
   bool cuidadoPcD = false;
@@ -58,17 +59,9 @@ class _CadastroCuidadorPageState extends State<CadastroCuidadorPage> {
       return;
     }
 
-    if (!cuidadoCriancas && !cuidadoIdosos && !cuidadoPcD) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Selecione ao menos um tipo de cuidado")),
-      );
-      return;
-    }
-
     setState(() => carregando = true);
 
     try {
-      
       final usuarioId = await UsuariosService.criarCuidador(
         nome: _nomeCtrl.text.trim(),
         email: _emailCtrl.text.trim(),
@@ -78,7 +71,6 @@ class _CadastroCuidadorPageState extends State<CadastroCuidadorPage> {
         senha: _senhaCtrl.text,
       );
 
-      
       await CuidadoresService.criar(
         usuarioId: usuarioId,
         bio: _bioCtrl.text.isEmpty
@@ -87,16 +79,6 @@ class _CadastroCuidadorPageState extends State<CadastroCuidadorPage> {
         valorHora: 30.0,
         raioKm: 10,
       );
-
-      if (cuidadoCriancas) {
-        await CuidadoresService.vincularTipo(usuarioId, 1);
-      }
-      if (cuidadoIdosos) {
-        await CuidadoresService.vincularTipo(usuarioId, 2);
-      }
-      if (cuidadoPcD) {
-        await CuidadoresService.vincularTipo(usuarioId, 3);
-      }
 
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -126,11 +108,12 @@ class _CadastroCuidadorPageState extends State<CadastroCuidadorPage> {
           icon: const Icon(Icons.arrow_back_ios_new),
           onPressed: () => Navigator.pop(context),
         ),
-        title: const Text("Cadastro de Cuidador",
-            style: TextStyle(fontWeight: FontWeight.bold)),
+        title: const Text(
+          "Cadastro de Cuidador",
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
         centerTitle: true,
       ),
-
       body: SingleChildScrollView(
         child: FormContainer(
           title: "Crie sua Conta de Cuidador",
@@ -142,9 +125,11 @@ class _CadastroCuidadorPageState extends State<CadastroCuidadorPage> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 _campoTexto("Nome completo", controller: _nomeCtrl),
-                _campoTexto("E-mail",
-                    controller: _emailCtrl,
-                    tipo: TextInputType.emailAddress),
+                _campoTexto(
+                  "E-mail",
+                  controller: _emailCtrl,
+                  tipo: TextInputType.emailAddress,
+                ),
 
                 _campoSenha(
                   "Senha",
@@ -164,33 +149,53 @@ class _CadastroCuidadorPageState extends State<CadastroCuidadorPage> {
                 Row(
                   children: [
                     Expanded(
-                        child: _campoTexto("Nascimento",
-                            controller: _nascimentoCtrl)),
+                      child: _campoTexto(
+                        "Nascimento",
+                        controller: _nascimentoCtrl,
+                      ),
+                    ),
                     const SizedBox(width: 12),
                     Expanded(
-                        child: _campoTexto("CPF",
-                            controller: _cpfCtrl,
-                            tipo: TextInputType.number)),
+                      child: _campoTexto(
+                        "CPF",
+                        controller: _cpfCtrl,
+                        tipo: TextInputType.number,
+                      ),
+                    ),
                   ],
                 ),
 
-                _campoTexto("Telefone",
-                    controller: _telefoneCtrl,
-                    tipo: TextInputType.phone),
+                _campoTexto(
+                  "Telefone",
+                  controller: _telefoneCtrl,
+                  tipo: TextInputType.phone,
+                ),
 
                 _campoTexto("Endereço", controller: _enderecoCtrl),
 
-                _campoTexto("Sobre você",
-                    controller: _bioCtrl, maxLines: 3),
+                _campoTexto(
+                  "Sobre você",
+                  controller: _bioCtrl,
+                  maxLines: 3,
+                ),
 
                 const SizedBox(height: 20),
 
-                _checkbox("Crianças", cuidadoCriancas,
-                    (v) => setState(() => cuidadoCriancas = v)),
-                _checkbox("Idosos", cuidadoIdosos,
-                    (v) => setState(() => cuidadoIdosos = v)),
-                _checkbox("PCD", cuidadoPcD,
-                    (v) => setState(() => cuidadoPcD = v)),
+                _checkbox(
+                  "Crianças",
+                  cuidadoCriancas,
+                  (v) => setState(() => cuidadoCriancas = v),
+                ),
+                _checkbox(
+                  "Idosos",
+                  cuidadoIdosos,
+                  (v) => setState(() => cuidadoIdosos = v),
+                ),
+                _checkbox(
+                  "PCD",
+                  cuidadoPcD,
+                  (v) => setState(() => cuidadoPcD = v),
+                ),
 
                 const SizedBox(height: 30),
 
@@ -210,8 +215,9 @@ class _CadastroCuidadorPageState extends State<CadastroCuidadorPage> {
                         : const Text(
                             "Concluir Cadastro",
                             style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold),
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
                   ),
                 ),
@@ -223,10 +229,12 @@ class _CadastroCuidadorPageState extends State<CadastroCuidadorPage> {
     );
   }
 
-  Widget _campoTexto(String label,
-      {required TextEditingController controller,
-      TextInputType tipo = TextInputType.text,
-      int maxLines = 1}) {
+  Widget _campoTexto(
+    String label, {
+    required TextEditingController controller,
+    TextInputType tipo = TextInputType.text,
+    int maxLines = 1,
+  }) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 16),
       child: TextField(
@@ -245,8 +253,12 @@ class _CadastroCuidadorPageState extends State<CadastroCuidadorPage> {
     );
   }
 
-  Widget _campoSenha(String label, bool mostrar,
-      TextEditingController controller, VoidCallback toggle) {
+  Widget _campoSenha(
+    String label,
+    bool mostrar,
+    TextEditingController controller,
+    VoidCallback toggle,
+  ) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 16),
       child: TextField(

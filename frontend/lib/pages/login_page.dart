@@ -283,7 +283,7 @@ class _LoginPageState extends State<LoginPage> {
                   const SizedBox(height: 16),
 
                   const Text(
-                    '(c) 2024 Cuidadex Inc.',
+                    '(c) 2025 Cuidadex Inc.',
                     style: TextStyle(
                       color: Color(0xFF5E5E6A),
                       fontSize: 11,

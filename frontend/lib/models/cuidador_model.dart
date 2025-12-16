@@ -27,11 +27,11 @@ class CuidadorModel {
       nome: json['nome'],
       avatarUrl: json['avatar_url'],
       bio: json['bio'],
-      valorHora: double.parse(json['valor_hora'].toString()),
-      notaMedia: double.parse(json['nota_media'].toString()),
-      totalAvaliacoes: json['total_avaliacoes'],
-      verificado: json['verificado'],
-      disponivel: json['disponivel'],
+      valorHora: double.tryParse(json['valor_hora']?.toString() ?? '0') ?? 0,
+      notaMedia: double.tryParse(json['nota_media']?.toString() ?? '0') ?? 0,
+      totalAvaliacoes: json['total_avaliacoes'] ?? 0,
+      verificado: json['verificado'] ?? false,
+      disponivel: json['disponivel'] ?? true,
     );
   }
 }

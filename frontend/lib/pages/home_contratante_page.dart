@@ -131,7 +131,7 @@ class _HomeContratantePageState extends State<HomeContratantePage> {
           ClipRRect(
             borderRadius: BorderRadius.circular(50),
             child: Image.network(
-              c.avatarUrl ?? "https://via.placeholder.com/100",
+              c.avatarUrl ?? "assets/images/avatar_padrao.jpg",
               width: 65,
               height: 65,
               fit: BoxFit.cover,

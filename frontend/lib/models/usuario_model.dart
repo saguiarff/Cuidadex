@@ -2,7 +2,7 @@ class UsuarioModel {
   final int id;
   final String nome;
   final String tipoUsuario; // "C" ou "G"
-  final String token;
+  final String? token;
 
   UsuarioModel({
     required this.id,

@@ -7,7 +7,7 @@ class CuidadoresService {
   //listar
   static Future<List<CuidadorModel>> listar({bool? verificado}) async {
     final uri = Uri.parse(
-      "${ApiConfig.baseUrl}/api/cuidadores"
+      "${ApiConfig.baseUrl}/cuidadores"
       "${verificado != null ? '?verificado=$verificado' : ''}",
     );
 
