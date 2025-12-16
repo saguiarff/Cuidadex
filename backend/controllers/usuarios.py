@@ -1,12 +1,13 @@
 from flask import Blueprint, request
 from database import get_conn
 from utils.responses import success, error
+from werkzeug.security import generate_password_hash
 
 bp = Blueprint("usuarios", __name__, url_prefix="/api/usuarios")
 
 
-# LISTAR USUÁRIOS
-@bp.get("/")
+# listar
+@bp.get("")
 def listar():
     try:
         with get_conn() as conn, conn.cursor() as cur:
@@ -18,13 +19,14 @@ def listar():
                 ORDER BY nome
             """)
             rows = cur.fetchall()
+
         return success(rows)
+
     except Exception as e:
         return error(str(e))
 
 
-# BUSCAR USUÁRIO POR ID
-
+# buscar por id
 @bp.get("/<int:id>")
 def buscar_por_id(id):
     try:
@@ -42,25 +44,40 @@ def buscar_por_id(id):
             return error("Usuário não encontrado", 404)
 
         return success(row)
+
     except Exception as e:
         return error(str(e))
 
 
-# CRIAR USUÁRIO
-@bp.post("/")
+# criar
+@bp.route("", methods=["POST", "OPTIONS"])
 def criar():
+    # Preflight CORS (Flutter Web)
+    if request.method == "OPTIONS":
+        return "", 200
+
     data = request.get_json()
 
+    if not data:
+        return error("JSON inválido ou ausente")
+
     campos_obrigatorios = [
-        "nome", "email", "telefone", "cpf",
-        "data_nascimento", "senha_hash", "tipo_usuario"
+        "nome",
+        "email",
+        "telefone",
+        "cpf",
+        "data_nascimento",
+        "senha_hash",
+        "tipo_usuario",
     ]
 
     for campo in campos_obrigatorios:
-        if campo not in data:
+        if campo not in data or not data[campo]:
             return error(f"Campo obrigatório ausente: {campo}")
 
     try:
+        senha_hash = generate_password_hash(data["senha_hash"])
+
         with get_conn() as conn, conn.cursor() as cur:
             cur.execute("""
                 INSERT INTO usuarios
@@ -74,25 +91,29 @@ def criar():
                 data["telefone"],
                 data["cpf"],
                 data["data_nascimento"],
-                data["senha_hash"],
+                senha_hash,
                 data["tipo_usuario"],
-                data.get("avatar_url")
+                data.get("avatar_url"),
             ))
+
             new_id = cur.fetchone()["id"]
 
-        return success({"id": new_id}, "Usuário criado", 201)
+        return success(
+            {"id": new_id},
+            "Usuário criado com sucesso",
+            201
+        )
 
     except Exception as e:
         return error(str(e))
 
 
-
-# ATIVAR / DESATIVAR USUÁRIO
+# ativar/desativar usuario
 @bp.patch("/<int:id>/ativo")
 def alterar_status(id):
     data = request.get_json()
 
-    if "ativo" not in data:
+    if not data or "ativo" not in data:
         return error("Campo 'ativo' é obrigatório")
 
     try:
@@ -103,7 +124,7 @@ def alterar_status(id):
                 WHERE id = %s
             """, (data["ativo"], id))
 
-        return success(message="Status atualizado")
+        return success(message="Status atualizado com sucesso")
 
     except Exception as e:
         return error(str(e))

@@ -14,14 +14,20 @@ from controllers.auth import bp as auth_bp
 load_dotenv()
 
 app = Flask(__name__)
-CORS(app)
+app.json.ensure_ascii = False
+
+# cors pro flutter web
+CORS(
+    app,
+    resources={r"/api/*": {"origins": "*"}},
+    supports_credentials=True
+)
 
 @app.get("/")
 def home():
     return {"status": "Cuidadex API rodando"}
 
-
-# Registro dos Blueprints
+# registro dos Blueprints
 app.register_blueprint(usuarios_bp)
 app.register_blueprint(cuidadores_bp)
 app.register_blueprint(tipos_cuidado_bp)
@@ -31,7 +37,7 @@ app.register_blueprint(auth_bp)
 
 if __name__ == "__main__":
     app.run(
-        host=FLASK_HOST,
-        port=FLASK_PORT,
+        host=FLASK_HOST,  
+        port=FLASK_PORT,   
         debug=True
     )
